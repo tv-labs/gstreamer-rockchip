@@ -1,4 +1,10 @@
-gstreamer1.0-rockchip (1.14-20240508-0+co1) rk5588; urgency=medium
+gstreamer1.0-rockchip (1.14-20240508-0+co2) rk3588; urgency=medium
+
+  * mpp: Add support for DMA_DRM support
+
+ -- Detlev Casanova <detlev.casanova@collabora.com>  Mon, 04 Nov 2024 17:06:06 -0500
+
+gstreamer1.0-rockchip (1.14-20240508-0+co1) rk3588; urgency=medium
 
   * Update to upstream commit 4d8322cd18c7
   * Fix stream resolution change support
