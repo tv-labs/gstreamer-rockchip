@@ -418,12 +418,21 @@ gst_mpp_dec_update_video_info (GstVideoDecoder * decoder, GstVideoFormat format,
 
   if (self->dma_feature) {
     GstCaps *tmp_caps = gst_caps_copy (output_state->caps);
+    guint32 drm_fourcc;
+
     gst_caps_set_features (tmp_caps, 0,
         gst_caps_features_new (GST_CAPS_FEATURE_MEMORY_DMABUF, NULL));
 
-    /* HACK: Expose dmabuf feature when the subset check is hacked */
-    if (gst_caps_is_subset (tmp_caps, output_state->caps))
-      gst_caps_replace (&output_state->caps, tmp_caps);
+    /* Set drm-format */
+    drm_fourcc = gst_video_dma_drm_fourcc_from_format (format);
+    if (drm_fourcc)
+      gst_caps_set_simple (tmp_caps, "drm-format", G_TYPE_STRING,
+        gst_video_dma_drm_fourcc_to_string (drm_fourcc, 0), NULL);
+
+    /* Set format */
+    gst_caps_set_simple (tmp_caps, "format", G_TYPE_STRING, "DMA_DRM", NULL);
+
+    gst_caps_replace (&output_state->caps, tmp_caps);
 
     gst_caps_unref (tmp_caps);
   }
