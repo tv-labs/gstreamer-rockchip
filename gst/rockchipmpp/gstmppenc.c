@@ -28,6 +28,9 @@
 
 #include <string.h>
 
+#include <drm_fourcc.h>
+#include <gst/video/video-info-dma.h>
+
 #include "gstmppallocator.h"
 #include "gstmppenc.h"
 
@@ -606,6 +609,7 @@ gst_mpp_enc_set_format (GstVideoEncoder * encoder, GstVideoCodecState * state)
 {
   GstMppEnc *self = GST_MPP_ENC (encoder);
   GstVideoInfo *info = &self->info;
+  GstVideoInfoDmaDrm drm_info;
   MppFrameFormat format;
   gint width, height, hstride, vstride;
 
@@ -623,7 +627,20 @@ gst_mpp_enc_set_format (GstVideoEncoder * encoder, GstVideoCodecState * state)
 
   self->input_state = gst_video_codec_state_ref (state);
 
-  *info = state->info;
+  if (gst_video_is_dma_drm_caps (state->caps)) {
+    if (!gst_video_info_dma_drm_from_caps (&drm_info, state->caps))
+      return FALSE;
+
+    if (!gst_video_info_dma_drm_to_video_info (&drm_info, info))
+      return FALSE;
+
+  } else {
+    if (!gst_video_info_from_caps (info, state->caps))
+      return FALSE;
+    if (!gst_video_info_dma_drm_from_video_info (&drm_info,
+            info, DRM_FORMAT_MOD_LINEAR))
+      gst_video_info_dma_drm_init (&drm_info);
+  }
 
   if (!gst_mpp_enc_video_info_align (info))
     return FALSE;
@@ -719,6 +736,7 @@ gst_mpp_enc_propose_allocation (GstVideoEncoder * encoder, GstQuery * query)
   GstVideoAlignment align;
   GstBufferPool *pool;
   GstVideoInfo info;
+  GstVideoInfoDmaDrm drm_info;
   GstCaps *caps;
   guint size;
 
@@ -728,8 +746,20 @@ gst_mpp_enc_propose_allocation (GstVideoEncoder * encoder, GstQuery * query)
   if (caps == NULL)
     return FALSE;
 
-  if (!gst_video_info_from_caps (&info, caps))
-    return FALSE;
+  if (gst_video_is_dma_drm_caps (caps)) {
+    if (!gst_video_info_dma_drm_from_caps (&drm_info, caps))
+      return FALSE;
+
+    if (!gst_video_info_dma_drm_to_video_info (&drm_info, &info))
+      return FALSE;
+
+  } else {
+    if (!gst_video_info_from_caps (&info, caps))
+      return FALSE;
+    if (!gst_video_info_dma_drm_from_video_info (&drm_info,
+            &info, DRM_FORMAT_MOD_LINEAR))
+      gst_video_info_dma_drm_init (&drm_info);
+  }
 
   gst_mpp_enc_video_info_align (&info);
   size = GST_VIDEO_INFO_SIZE (&info);
@@ -775,7 +805,9 @@ static GstBuffer *
 gst_mpp_enc_convert (GstVideoEncoder * encoder, GstVideoCodecFrame * frame)
 {
   GstMppEnc *self = GST_MPP_ENC (encoder);
-  GstVideoInfo src_info = self->input_state->info;
+  GstVideoInfoDmaDrm drm_info;
+  GstVideoInfo src_info;
+  GstVideoCodecState * state = self->input_state;
   GstVideoInfo dst_info = self->info;
   GstVideoFrame src_frame, dst_frame;
   GstBuffer *outbuf, *inbuf;
@@ -784,6 +816,21 @@ gst_mpp_enc_convert (GstVideoEncoder * encoder, GstVideoCodecFrame * frame)
   gsize size, maxsize, offset;
   gint src_hstride, src_vstride;
   guint i;
+
+  if (gst_video_is_dma_drm_caps (state->caps)) {
+    if (!gst_video_info_dma_drm_from_caps (&drm_info, state->caps))
+      return NULL;
+
+    if (!gst_video_info_dma_drm_to_video_info (&drm_info, &src_info))
+      return NULL;
+
+  } else {
+    if (!gst_video_info_from_caps (&src_info, state->caps))
+      return NULL;
+    if (!gst_video_info_dma_drm_from_video_info (&drm_info,
+            &src_info, DRM_FORMAT_MOD_LINEAR))
+      gst_video_info_dma_drm_init (&drm_info);
+  }
 
   inbuf = frame->input_buffer;
 

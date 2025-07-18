@@ -104,7 +104,8 @@ static GstStaticPadTemplate gst_mpp_h264_enc_sink_template =
 GST_STATIC_PAD_TEMPLATE ("sink",
     GST_PAD_SINK,
     GST_PAD_ALWAYS,
-    GST_STATIC_CAPS ("video/x-raw,"
+    GST_STATIC_CAPS (GST_VIDEO_DMA_DRM_CAPS_MAKE ";" \
+	"video/x-raw,"
         "format = (string) { " MPP_H264_ENC_FORMATS " }, "
         GST_MPP_H264_ENC_SIZE_CAPS));
 
