@@ -1,3 +1,9 @@
+gstreamer1.0-rockchip (1.14-20240508-0+co4) jamba; urgency=medium
+
+  * mpp: Add support for DMA_DRM in mpph264enc
+
+ -- Detlev Casanova <detlev.casanova@collabora.com>  Fri, 25 Jul 2025 19:09:16 -0500
+
 gstreamer1.0-rockchip (1.14-20240508-0+co3) jamba; urgency=medium
 
   * mpp: Add support for DMA_DRM in mppvideodec
