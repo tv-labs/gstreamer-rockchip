@@ -1,3 +1,9 @@
+gstreamer1.0-rockchip (1.14-20240508-0+co6) jamba; urgency=medium
+
+  * d/control: Add armel in archs that depend on libmpp
+
+ -- Detlev Casanova <detlev.casanova@collabora.com>  Fri, 11 Sep 2026 11:31:52 -0500
+
 gstreamer1.0-rockchip (1.14-20240508-0+co5) jamba; urgency=medium
 
   * No changes, bump version
